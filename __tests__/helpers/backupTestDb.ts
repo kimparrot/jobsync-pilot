@@ -8,7 +8,10 @@ import { CONTACT_ROLES, JOB_SOURCES, JOB_STATUSES } from "@/lib/constants";
 
 export function makeTestDbUrl(): { url: string; dir: string } {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "jobsync-backup-"));
-  return { url: `file:${path.join(dir, "test.db")}`, dir };
+  const databasePath = path.join(dir, "test.db");
+  // Some Prisma SQLite engines require the file to exist before db push.
+  fs.writeFileSync(databasePath, "", { flag: "wx" });
+  return { url: `file:${databasePath}`, dir };
 }
 
 // db push rather than migrate deploy: the round-trip asserts against the
