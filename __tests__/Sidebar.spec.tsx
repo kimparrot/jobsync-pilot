@@ -99,6 +99,12 @@ describe("NavLink - label rendering", () => {
     renderNavLink(true);
     expect(screen.getByRole("link", { name: "Jobs" })).toBeInTheDocument();
   });
+
+  it("exposes a visible focus ring on the link", () => {
+    renderNavLink(true);
+
+    expect(screen.getByRole("link")).toHaveClass("navlink");
+  });
 });
 
 describe("Sidebar", () => {
@@ -118,6 +124,30 @@ describe("Sidebar", () => {
       "href",
       "/dashboard/myjobs"
     );
+  });
+
+  it("uses the Rolefield mark and an ink navigation surface", () => {
+    renderSidebar();
+
+    const sidebar = screen.getByRole("complementary");
+    expect(sidebar).toHaveClass("shell-nav");
+    expect(sidebar).toHaveClass("overflow-x-hidden");
+    expect(
+      screen.getByRole("link", { name: "Rolefield" }),
+    ).toHaveAttribute("href", "/dashboard");
+    expect(sidebar.querySelector("svg")).toHaveClass("text-brand");
+  });
+
+  it("fades the Rolefield wordmark when collapsed without removing it", async () => {
+    const user = userEvent.setup();
+    renderSidebar();
+
+    const wordmark = screen.getByText("Rolefield", { selector: "span.text-display" });
+    expect(wordmark).not.toHaveClass("opacity-0");
+
+    await user.click(screen.getByRole("button", { name: "Collapse sidebar" }));
+
+    expect(wordmark).toHaveClass("opacity-0");
   });
 
   it("shows the user's email and a settings link via the account menu", async () => {

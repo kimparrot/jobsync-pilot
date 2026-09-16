@@ -19,26 +19,32 @@ interface NavLinkProps {
   expanded: boolean;
 }
 
-function NavLink({ label, Icon, route, pathname, expanded }: NavLinkProps) {
-  // "/dashboard" is a prefix of every other route, so it only matches exactly.
-  const isActive =
+/** "/dashboard" is a prefix of every other route, so it only matches exactly. */
+export function isNavRouteActive(pathname: string, route: string) {
+  return (
     pathname === route ||
-    (route !== "/dashboard" && pathname.startsWith(`${route}/`));
+    (route !== "/dashboard" && pathname.startsWith(`${route}/`))
+  );
+}
+
+function NavLink({ label, Icon, route, pathname, expanded }: NavLinkProps) {
+  const isActive = isNavRouteActive(pathname, route);
 
   const link = (
     <Link
       href={route}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "navlink h-10 w-full hover:text-foreground",
+        "navlink h-10 w-full min-h-10 hover:text-foreground",
         isActive ? "text-foreground" : "text-muted-foreground",
-        isActive && expanded && "rounded-md bg-accent"
+        isActive && "bg-accent",
+        expanded ? "rounded-md" : "rounded-sm",
       )}
     >
       {isActive && (
         <span
           aria-hidden
-          className="absolute left-0 top-0 h-full w-0.5 bg-foreground"
+          className="absolute left-0 top-1.5 h-[calc(100%-0.75rem)] w-0.5 rounded-full bg-brand"
         />
       )}
       {/* Fixed-width lead box (= collapsed rail width) so the icon sits at the
@@ -48,8 +54,8 @@ function NavLink({ label, Icon, route, pathname, expanded }: NavLinkProps) {
       </span>
       <span
         className={cn(
-          "truncate text-sm transition-opacity duration-200",
-          expanded ? "opacity-100 delay-100" : "opacity-0"
+          "truncate text-sm motion-safe:transition-opacity motion-safe:duration-200",
+          expanded ? "opacity-100 delay-100" : "opacity-0",
         )}
       >
         {label}
