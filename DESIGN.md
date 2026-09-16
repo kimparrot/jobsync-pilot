@@ -36,7 +36,7 @@ What this foundation does not do:
 | Mark | Rounded square, rust plate, three cream “field rows” of uneven length |
 | Voice (copy, later) | Direct, unhurried, specific. No coach-speak. |
 
-The mark is inline SVG in `Brand.tsx` (no image asset, no network font). It is used in the desktop rail, the mobile sheet header, and the top bar. Collapsed rail shows the mark only; the wordmark stays in the tree at `opacity-0` so the width animation does not remount.
+The mark is inline SVG in `Brand.tsx` (no image asset, no network font). It is used in the desktop rail and mobile sheet header; the top bar uses the wordmark. Collapsed rail shows the mark only; the wordmark stays in the tree at `opacity-0` so the width animation does not remount.
 
 Auth screens, document titles, and package metadata still say JobSync until those owners pick up the name. Do not treat a mixed name as a bug in this job.
 
@@ -102,7 +102,7 @@ Built from the existing Header / Sidebar / NavLink / SidebarToggle / Sheet / Too
 ### Desktop rail
 
 - Ink surface, brand mark, wordmark, existing `SIDEBAR_LINKS` in order.
-- Developer Options remains gated with the existing `item.devOnly && process.env.NODE_ENV !== "development"` check. Do not restyle it as a separate product area in the career nav; it is developer feedback, not the assistant.
+- Developer Options remains gated with the existing `item.devOnly && process.env.NODE_ENV !== "development"` check. It contains development utilities, not the planned tester-feedback surface. That separate voice/text destination still needs implementation.
 - Active route: `aria-current="page"`, rust tick on the leading edge, raised `--accent` fill. `/dashboard` matches exactly so it does not prefix-match every child route.
 - Collapsed: tooltips on the right; labels `opacity-0`; mark remains centred in the 56px column; no overflow.
 - User menu and sign-out stay at the foot of the rail with current behaviour.
@@ -146,8 +146,8 @@ Keep these distinct in future product work. The shell does not merge them into o
 
 | Concept | Meaning |
 | --- | --- |
-| Source | Canonical facts about the person (roles held, education, skills) |
-| Profile | How those facts are selected and ordered for a purpose |
+| Source | Original uploaded resume, letter, application or reference template, preserved for inspection |
+| Profile | Reusable facts extracted from source material and reviewed/corrected by the user |
 | Layout | Visual arrangement for an export (page geometry, typography of the artifact) |
 | Job output | A specific artifact aimed at a role (resume or letter instance) |
 
