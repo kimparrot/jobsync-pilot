@@ -43,8 +43,8 @@ All reusable facts live **under a `Resume`**, not under a standalone profile. `P
 
 - Resume PDF (above) **also re-attaches**: `useResumePdfExport.ts` downloads the blob **and** `POST`s it back to `/api/profile/resume` (first export attaches; later exports ask replace vs download-only). This is the one existing source→output bridge.
 - Cover-letter PDF: single business-letter layout `src/components/profile/cover-letter-pdf/CoverLetterTemplate.tsx`, builder `src/components/profile/cover-letter-pdf/generateCoverLetterPdf.tsx`, settings `src/models/coverLetterExport.model.ts` (font/size/lineHeight/margins/paragraph spacing), dialog `src/components/profile/CoverLetterExportDialog.tsx`, gate `src/components/profile/cover-letter-export-dialog/canExportCoverLetter.ts`.
-- Jobs CSV: `src/app/api/jobs/export/route.ts` + `src/components/myjobs/jobs-container/downloadJobsCsv.ts` (job tracker rows, not documents).
-- Backup zip (developer apparatus, not product export): `src/lib/backup/export.ts` / `import.ts` bundles DB rows + `files/resumes/*`.
+- Jobs CSV: `src/app/api/jobs/export/route.ts` + `src/components/myjobs/jobs-container/downloadJobsCsv.ts` (job tracker rows, not documents) — a user data-management feature.
+- Backup zip (user data-management: export/recovery, not product document export): `src/lib/backup/export.ts` / `import.ts` bundles DB rows + `files/resumes/*`.
 
 ### F. Previous applications and letters (history)
 
@@ -64,21 +64,21 @@ All reusable facts live **under a `Resume`**, not under a standalone profile. `P
 
 | # | Conflation | Where it shows | Recommendation |
 |---|-----------|----------------|----------------|
-| 1 | Original upload **is** the resume | `Resume` holds both `File.filePath` (bytes) and `ResumeSections` (structured facts); `ResumeHeader.tsx` swaps title ↔ download button; export re-attaches the PDF over the same `FileId` (`useResumePdfExport.ts`) | Name four layers everywhere: **Source file** (untouched upload) / **Profile** (corrected reusable facts) / **Layout** (Simple/Professional + settings) / **Job version** (copy or letter linked to a `Job`). Never overwrite the source upload with an export; keep both files. |
+| 1 | Original upload **is** the resume | `Resume` holds both `File.filePath` (bytes) and `ResumeSections` (structured facts); `ResumeHeader.tsx` swaps title ↔ download button; export re-attaches the PDF over the same `FileId` (`useResumePdfExport.ts`) | Name four layers everywhere: **Source file** (untouched upload) / **Profile** (corrected reusable facts) / **Layout** (Simple/Professional + settings) / **Job version** (copy or letter linked to a `Job`). Direction: never overwrite the source upload with an export. Association mechanism unresolved — see §3. |
 | 2 | Library mixes **reusable profile** with **job outputs** | `ProfileContainer.tsx` + `ResumeTable.tsx` list base resumes, tailored copies, and cover letters in one `ProfileDocument[]` table distinguished only by a Type badge | Split or filter the library: “My profile” (default resume) vs “Job versions” (copies + letters grouped by `Job`), with the `Jobs` count column promoted to a link. |
 | 3 | **Copy** vs **tailored version** are identical UI | `CopyResumeDialog.tsx` clones everything with a `(2)` title; nothing records source resume, target job, or what changed | A job version should record `sourceResumeId → jobId` and a one-line “what changed”; title pattern `{Company} — {Title}` instead of `(2)`. |
 | 4 | **Default resume** vs **selected resume** vs **attached file** | `User.defaultResumeId` (generation default), `Job.resumeId` (which resume an application used), `Resume.FileId` (attached bytes); `AddJob.tsx` resume select requires `hasMinResumeSections()` while export needs only a name-or-section (`canExportResume`) | One picker everywhere with three labelled slots: default (profile), this-job (override), file (source). Unify the gating message. |
 | 5 | **Review** (advice) vs **match** (score) vs **content** | `Resume.reviewData` advice renders inside `ResumeContainer`; `Job.matchScore/matchData` renders in `JobDetails` match tab; both launch from similar chat/agent buttons | Keep advice visually distinct from facts (existing `ReviewDetails.tsx` + `AgentReviewScoreCard.tsx` pattern) and never write AI wording back into sections except via the import-review accept/discard pattern (`ImportReviewBanner.tsx`). |
-| 6 | **Developer apparatus** reads as product | Backup zip, MCP routes (`src/app/api/mcp/route.ts`), `SupportDialog.tsx` (points at public GitHub issues), jobs CSV | Hide behind an explicit Developer/Tester area per LeaseKit lesson; pilot feedback needs its **own** destination (missing — see §4). |
+| 6 | **Developer apparatus** reads as product | MCP routes (`src/app/api/mcp/route.ts`), `SupportDialog.tsx` (points at public GitHub issues) | Keep developer routes behind an explicit Developer/Tester area per LeaseKit lesson; pilot feedback needs its **own** destination (missing — see §4). Backup zip and jobs CSV are user data-management features, not developer apparatus — keep them available; do not hide useful export/recovery. |
 
 ## 3. Limitations and smallest missing transitions (no rewrite)
 
 | Gap | Status | Smallest transition reusing existing pieces |
 |-----|--------|---------------------------------------------|
-| Provenance: source vs profile vs layout vs job output indistinguishable | Missing | (a) Stop overwriting uploads: export writes a **new** `File` row labelled `generated` instead of replacing `FileId` (`useResumePdfExport.ts`, `createFileEntry()` in `src/actions/profile/shared.ts`). (b) Surface the four layers in `ResumeHeader.tsx` + `ProfileContainer.tsx` labels. No schema change strictly needed; a `File.fileType='generated'` value or filename suffix suffices for pilot. |
+| Provenance: source vs profile vs layout vs job output indistinguishable | Missing — **unresolved** | Direction: stop overwriting uploads and surface the four layers in `ResumeHeader.tsx` + `ProfileContainer.tsx` labels. Mechanism is **undecided**: today `Resume.FileId` is a unique link (one file per resume), so keeping source and generated files side by side needs an explicit association decision plus an ownership-reviewed implementation. A `fileType` value or filename suffix alone is **not** asserted to preserve retrievable lineage. |
 | Job-specific resume tailoring | Manual-copy only | Add optional `jobId` to the copy flow: from `JobDetails` “Tailor resume” → `copyResume()` → `updateJob({resumeId: copy.id})` (both actions exist). Record lineage in the copy title; diff view deferred. |
 | Per-job letter exists but is chat-or-tab buried | Exists, undiscoverable | Promote the existing `CoverLetterTab.tsx` empty-state + `JobDetailsHeader.tsx` Regenerate button into a one-click “Generate → preview → attach” strip; reuse `generateCoverLetterForJob()` + `CoverLetterExportDialog.tsx`. |
-| OpenAI voice + text from first hosted pilot | Text exists (provider enum), **voice missing** | Add push-to-talk input on `AgentChatInput.tsx` (Web Speech API or OpenAI transcription endpoint) that submits text into the existing `/api/ai/chat` flow; no new assistant logic. OpenAI text = switch default provider/model (`src/models/ai.model.ts`) at deploy config, not code. |
+| OpenAI voice + text from first hosted pilot | Text exists (provider enum), **voice missing entirely** | Voice is a **separate implementation dependency**, not deploy-config-only work. Required: OpenAI voice **input and spoken output** for the career assistant, wired into the existing `/api/ai/chat` + `AgentChatInput.tsx`/`AgentChatMessages.tsx` flow. Web Speech-only or transcription-only (no spoken output) is **insufficient**. OpenAI text = provider/model selection (`src/models/ai.model.ts`); voice = new implementation (input capture, spoken-output playback, supported OpenAI voice contract). |
 | Invite-only private accounts | Not verified in this doc (auth owned separately; do not assume) | Treat as unresolved: confirm invite gate outside this file before pilot copy promises it. |
 | Separate developer/tester feedback destination | Missing (Support points at `Gsync/jobsync#issues`) | Add a pilot-only feedback form/route writing to its own store or mailbox; keep `SupportDialog.tsx` for open-source support. Do not comingle. |
 | Shell/empty/loading/error consistency (LeaseKit) | Shell exists (`src/app/dashboard/layout.tsx`: `Sidebar` + `Header` + `SidebarInset` + docked chat), empty states exist per surface (`AgentChatEmptyState`, `CoverLetterTab` empty, export `EMPTY_MESSAGE`) but vary | Standardise on the existing `PdfExportDialog` empty/error pattern and the `ImportReviewBanner` accept/discard pattern; no new component system. |
@@ -86,11 +86,11 @@ All reusable facts live **under a `Resume`**, not under a standalone profile. `P
 ## 4. Pilot-requirements mapping
 
 - **Invite-only private accounts:** unresolved here — auth is owned by the separate assessor; this doc makes no claim about signup/invite behaviour.
-- **OpenAI voice + text from day one:** text path is provider-pluggable (`AiProvider.OPENAI`, models in `src/models/ai.model.ts`; chat via `POST /api/ai/chat`); voice UI does not exist and is the largest pilot gap (§3).
+- **OpenAI voice + text from day one:** text path is provider-pluggable (`AiProvider.OPENAI`, models in `src/models/ai.model.ts`; chat via `POST /api/ai/chat`); voice UI does not exist and is the largest pilot gap (§3). The pilot requires OpenAI voice input **and** spoken output plus a separate feedback destination — a supported OpenAI voice contract is a standalone implementation dependency, not deploy-config-only work.
 - **Separate feedback destination:** missing; `SupportDialog.tsx` targets the public tracker — add a distinct pilot channel.
-- **Source vs profile vs layout vs outputs distinguishable:** data model already separates bytes (`File`), facts (`ResumeSections`), settings (`ResumeExportSettings`), and linkage (`Job.resumeId/coverLetterId`); the UI collapses them (§2 #1–#4). Fix is labelling + stop-overwrite, not schema.
+- **Source vs profile vs layout vs outputs distinguishable:** data model already separates bytes (`File`), facts (`ResumeSections`), settings (`ResumeExportSettings`), and linkage (`Job.resumeId/coverLetterId`); the UI collapses them (§2 #1–#4). Direction is labelling + stop-overwrite, but the source/generated association decision is **unresolved** and needs an ownership-reviewed implementation (§3) — this doc asserts no mechanism.
 - **LinkedIn as design reference:** not inspected here (owned by the research partner); no LinkedIn claims made.
-- **LeaseKit lessons applied:** keep `Sidebar`/`Header`/docked-panel shell (`src/app/dashboard/layout.tsx`); reuse the clear empty/loading/error states (`ExportPdfDialog`, `CoverLetterTab`, `AgentChatEmptyState`); keep search focused (`JobsToolbar`, `SearchInput`); use progressive disclosure (tabs in `JobDetails`, settings panels); isolate developer apparatus (backup/MCP/CSV) from the pilot document flow.
+- **LeaseKit lessons applied:** keep `Sidebar`/`Header`/docked-panel shell (`src/app/dashboard/layout.tsx`); reuse the clear empty/loading/error states (`ExportPdfDialog`, `CoverLetterTab`, `AgentChatEmptyState`); keep search focused (`JobsToolbar`, `SearchInput`); use progressive disclosure (tabs in `JobDetails`, settings panels); isolate developer routes (MCP) from the pilot document flow while keeping backup/CSV available as user data-management.
 
 ## 5. Recommended first document workflow (uses only existing pieces)
 
@@ -100,23 +100,23 @@ All reusable facts live **under a `Resume`**, not under a standalone profile. `P
 2. Structure with AI (`StructureWithAiCard` → `/api/ai/resume/import` → accept/discard in `ImportReviewBanner`) or edit section cards manually; verify in `ResumeContainer`.
 3. Set default (`setDefaultResume()`; gate `hasMinResumeSections()`).
 4. Per job: `AddJob` (or agent `add_job`) → open `JobDetails` → Match (`match_job`, writes `matchScore/matchData`) → Tailor (copy resume via `CopyResumeDialog`, link `Job.resumeId`) → Cover letter (`CoverLetterTab` Generate via `generate_cover_letter`, writes `Job.coverLetterId`) → Review (`review_resume`, writes `Resume.reviewData`, advice-only).
-5. Export resume PDF (`ExportPdfDialog`, Simple/Professional) + letter PDF (`CoverLetterExportDialog`); download **and** keep the generated file alongside — not over — the source.
+5. Export resume PDF (`ExportPdfDialog`, Simple/Professional) + letter PDF (`CoverLetterExportDialog`); direction is download **and** keep the generated file alongside — not over — the source (association mechanism unresolved, see §3).
 6. Track in `myjobs` statuses (`draft → applied → interview → offer…`) with the used documents linked.
 
 ### Acceptance checklist (pilot slice)
 
-- [ ] Uploader accepts PDF/DOCX ≤ 5 MB, rejects with the existing messages; source file stays byte-identical after later exports.
+- [ ] Uploader accepts PDF/DOCX ≤ 5 MB, rejects with the existing messages; source file stays byte-identical after later exports (per the §3 association decision once made).
 - [ ] AI structuring offers accept/discard per card; discarding leaves sections untouched.
 - [ ] Default resume is visually badged in the library; job pickers default to it but allow override.
 - [ ] From a job page, user can generate a letter, tailor (copy) a resume, and see both linked (`JobSummaryCard` / letter tab) without opening chat manually.
 - [ ] Exports show live preview + settings (both templates for resumes); filenames identify layout.
 - [ ] Review/match outputs render as advice/scores, never silently rewrite sections.
 - [ ] Library distinguishes Source / Profile / Job version at a glance (labels, not just Type badge).
-- [ ] Voice input (push-to-talk) submits into chat; OpenAI text works on hosted build; tester feedback goes to the pilot channel, not GitHub issues.
+- [ ] Career assistant supports OpenAI voice input **and** spoken output on the hosted build (transcription-only or Web Speech-only does not satisfy); OpenAI text works; tester feedback goes to the pilot channel, not GitHub issues.
 
 ## 6. Existing test pointers (run before touching the flow)
 
-Unit (`__tests__/`, vitest — 231 files):
+Unit (`__tests__/`, vitest — Parent baseline: 237 files / 2870 tests):
 
 - Resume/profile: `CreateResume.spec.tsx`, `AddContactInfo.spec.tsx`, `AddExperience.spec.tsx`, `AddEducation.spec.tsx`, `AddResumeSummary.spec.tsx`, `CopyResumeDialog.spec.tsx`, `ProfileContainer.spec.tsx`, `ResumeContainer.spec.tsx`, `ReviewDetails.spec.tsx`, `canExportResume.spec.ts`, `defaultResume.actions.spec.ts`.
 - Letters: `coverLetter.actions.spec.ts`, `coverLetterForm.schema.spec.ts`, `coverLetterTitle.spec.ts`, `coverLetterPdf.spec.ts`, `coverLetterStyles.spec.ts`, `coverLetterExportSettings.spec.ts`, `CoverLetterSettingsPanel.spec.tsx`, `canExportCoverLetter.spec.ts`.
@@ -127,5 +127,5 @@ E2E (`e2e/`, playwright): `profile.spec.ts`, `agent-chat.spec.ts`, `add-job.spec
 
 ## 7. Unresolved facts / not validated
 
-- Invite-gate behaviour, hosted provider/voice wiring, and any hosted-storage (non-local-disk) path: not inspected (auth/hosting out of scope) — unknown stays unknown.
+- Invite-gate behaviour, the supported OpenAI voice contract (input + spoken output), the source/generated file association decision, and any hosted-storage (non-local-disk) path: not inspected or not decided here (auth/hosting out of scope; association needs an ownership-reviewed implementation) — unknown stays unknown.
 - All routes, gates, and limits above are **source claims only**; no test suite, dev server, or export was executed for this note. Re-run §6 suites plus one manual upload→import→copy→letter→export pass before pilot sign-off.
