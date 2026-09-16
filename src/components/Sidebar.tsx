@@ -2,9 +2,9 @@
 import Link from "next/link";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Briefcase } from "lucide-react";
 import { APP_CONSTANTS, SIDEBAR_LINKS } from "@/lib/constants";
 import NavLink from "./NavLink";
+import { BrandMark, BRAND_NAME } from "./Brand";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "@/context/SidebarContext";
@@ -26,7 +26,7 @@ function Sidebar({ user, signOutAction }: SidebarProps) {
       <aside
         id={APP_CONSTANTS.SIDEBAR_DOM_ID}
         className={cn(
-          "fixed inset-y-0 left-0 z-10 hidden flex-col border-r bg-background transition-[width] duration-200 ease-in-out sm:flex",
+          "shell-nav fixed inset-y-0 left-0 z-10 hidden flex-col overflow-x-hidden border-r transition-[width] duration-200 ease-in-out motion-reduce:transition-none sm:flex",
           expanded
             ? APP_CONSTANTS.SIDEBAR_WIDTH.expanded.rail
             : APP_CONSTANTS.SIDEBAR_WIDTH.collapsed.rail,
@@ -40,23 +40,23 @@ function Sidebar({ user, signOutAction }: SidebarProps) {
               onClick={(e) => {
                 if (isOnDashboard) e.preventDefault();
               }}
-              className="group flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground md:h-8 md:w-8"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              <Briefcase className="h-4 w-4 transition-transform group-hover:scale-110" />
-              <span className="sr-only">JobSync</span>
+              <BrandMark className="h-8 w-8" />
+              <span className="sr-only">{BRAND_NAME}</span>
             </Link>
           </div>
           <span
             className={cn(
-              "truncate font-semibold transition-opacity duration-200",
+              "text-display truncate text-[15px] motion-safe:transition-opacity motion-safe:duration-200",
               expanded ? "opacity-100 delay-100" : "opacity-0",
             )}
           >
-            JobSync
+            {BRAND_NAME}
           </span>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto py-2">
+        <nav className="flex flex-1 flex-col gap-1 overflow-x-hidden overflow-y-auto py-2">
           {SIDEBAR_LINKS.map((item) => {
             // Only show dev-only items in development mode
             if (item.devOnly && process.env.NODE_ENV !== "development") {
@@ -75,7 +75,7 @@ function Sidebar({ user, signOutAction }: SidebarProps) {
           })}
         </nav>
 
-        <div className="flex flex-col gap-1 border-t py-2">
+        <div className="flex flex-col gap-1 border-t border-border py-2">
           <ProfileDropdown
             user={user}
             expanded={expanded}

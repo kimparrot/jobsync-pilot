@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { PanelLeft, Briefcase } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { PanelLeft } from "lucide-react";
 
 import { Button } from "./ui/button";
 import {
@@ -12,41 +15,59 @@ import {
 import { SIDEBAR_LINKS } from "@/lib/constants";
 import SidebarToggle from "./SidebarToggle";
 import { AgentChatTrigger } from "./AgentChatTrigger";
+import { Brand, BRAND_NAME, BRAND_TAGLINE } from "./Brand";
+import { isNavRouteActive } from "./NavLink";
+import { cn } from "@/lib/utils";
 
-async function Header() {
+function Header() {
+  const path = usePathname();
+
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="shell-header sticky top-0 z-30 flex h-14 items-center gap-3 overflow-hidden border-b bg-card/90 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 sm:backdrop-blur-none">
       <Sheet>
         <SheetTrigger asChild>
-          <Button size="icon" variant="outline" className="sm:hidden">
+          <Button
+            size="icon"
+            variant="outline"
+            className="h-11 w-11 shrink-0 sm:hidden"
+          >
             <PanelLeft className="h-5 w-5" />
             <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="sm:max-w-xs">
+        <SheetContent
+          side="left"
+          className="shell-nav w-[min(100%,20rem)] overflow-x-hidden p-0 sm:max-w-xs"
+        >
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-          <nav className="grid gap-6 text-lg font-medium">
+          <div className="flex h-14 items-center gap-2 overflow-hidden border-b border-border pr-12 pl-4">
             <SheetClose asChild>
               <Link
                 href="/dashboard"
-                className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
+                className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                <Briefcase className="h-5 w-5 transition-all group-hover:scale-110" />
-                <span className="sr-only">JobSync</span>
+                <Brand markClassName="h-8 w-8" />
               </Link>
             </SheetClose>
+          </div>
+          <nav className="grid gap-1 overflow-y-auto p-3 text-base font-medium">
             {SIDEBAR_LINKS.map((item) => {
               // Only show dev-only items in development mode
               if (item.devOnly && process.env.NODE_ENV !== "development") {
                 return null;
               }
+              const isActive = isNavRouteActive(path, item.route);
               return (
                 <SheetClose asChild key={item.label}>
                   <Link
                     href={item.route}
-                    className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "flex min-h-11 items-center gap-3 rounded-md px-3 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                      isActive && "bg-accent text-foreground",
+                    )}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-5 w-5 shrink-0" />
                     {item.label}
                   </Link>
                 </SheetClose>
@@ -56,20 +77,17 @@ async function Header() {
         </SheetContent>
       </Sheet>
       <SidebarToggle />
-      <h1 className="font-semibold">
-        JobSync<span className="hidden sm:inline"> - Job Search Assistant</span>
+      <h1 className="flex min-w-0 items-baseline gap-2">
+        <span className="text-display truncate text-[15px] sm:text-base">
+          {BRAND_NAME}
+        </span>
+        <span className="hidden truncate font-sans text-sm font-normal text-muted-foreground sm:inline">
+          {BRAND_TAGLINE}
+        </span>
       </h1>
-      <div className="relative ml-auto flex-1 md:grow-0">
-        {/* <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          id="search"
-          type="search"
-          placeholder="Search..."
-          className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
-        /> */}
+      <div className="relative ml-auto flex min-w-0 flex-1 justify-end md:grow-0">
+        <AgentChatTrigger />
       </div>
-
-      <AgentChatTrigger />
     </header>
   );
 }

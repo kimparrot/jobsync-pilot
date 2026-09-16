@@ -6,6 +6,11 @@
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  /* Display is Inter with a tightened treatment (see .text-display). Serif
+     faces are listed first so a local Palatino/Georgia can take over later
+     without a network font or a new dependency. */
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+    "Times New Roman", var(--font-inter), ui-serif, serif;
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -26,6 +31,10 @@
   --color-popover-foreground: hsl(var(--popover-foreground));
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
+  --color-brand: hsl(var(--brand));
+  --color-brand-foreground: hsl(var(--brand-foreground));
+  --color-nav: hsl(var(--nav));
+  --color-nav-foreground: hsl(var(--nav-foreground));
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -55,64 +64,91 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Warm off-white canvas, crisp white surfaces, deep ink chrome. */
+    --background: 36 28% 96.5%;
+    --foreground: 222 38% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 38% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --popover-foreground: 222 38% 12%;
+    --primary: 222 42% 18%;
+    --primary-foreground: 40 33% 97%;
+    --secondary: 36 18% 93%;
+    --secondary-foreground: 222 35% 16%;
+    --muted: 36 16% 93%;
+    --muted-foreground: 222 14% 34%;
+    --accent: 36 20% 92%;
+    --accent-foreground: 222 35% 16%;
+    --destructive: 0 72% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 36 14% 86%;
+    --input: 36 14% 86%;
+    --ring: 22 58% 38%;
     --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-1: 22 58% 42%;
+    --chart-2: 214 38% 36%;
+    --chart-3: 32 52% 42%;
+    --chart-4: 198 28% 36%;
+    --chart-5: 18 32% 32%;
+
+    --brand: 22 58% 42%;
+    --brand-foreground: 36 40% 97%;
+    --brand-mark-fg: hsl(36 40% 97%);
+    --nav: 222 38% 13%;
+    --nav-foreground: 36 30% 96%;
+    --nav-muted: 222 28% 18%;
+    --nav-muted-foreground: 214 16% 74%;
+    --nav-accent: 222 30% 20%;
+    --nav-border: 222 24% 20%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 40.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 23.5%;
-    --input: 217.2 32.6% 21.5%;
-    --ring: 224.3 76.3% 48%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 222 28% 7%;
+    --foreground: 36 24% 95%;
+    --card: 222 26% 10%;
+    --card-foreground: 36 24% 95%;
+    --popover: 222 26% 11%;
+    --popover-foreground: 36 24% 95%;
+    --primary: 36 28% 92%;
+    --primary-foreground: 222 38% 12%;
+    --secondary: 222 22% 14%;
+    --secondary-foreground: 36 20% 94%;
+    --muted: 222 22% 14%;
+    --muted-foreground: 36 10% 72%;
+    --accent: 222 20% 16%;
+    --accent-foreground: 36 20% 94%;
+    --destructive: 0 62% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 18% 18%;
+    --input: 222 18% 18%;
+    --ring: 28 72% 58%;
+    --chart-1: 22 62% 56%;
+    --chart-2: 214 48% 62%;
+    --chart-3: 36 58% 58%;
+    --chart-4: 198 36% 52%;
+    --chart-5: 18 28% 58%;
+
+    --brand: 24 68% 56%;
+    --brand-foreground: 222 38% 10%;
+    --brand-mark-fg: hsl(222 38% 10%);
+    --nav: 222 32% 9%;
+    --nav-foreground: 36 24% 96%;
+    --nav-muted: 222 26% 13%;
+    --nav-muted-foreground: 214 14% 76%;
+    --nav-accent: 222 24% 15%;
+    --nav-border: 222 20% 16%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
   }
   body {
     @apply bg-background text-foreground;
@@ -129,6 +165,27 @@
   textarea::placeholder {
     color: var(--color-gray-400);
   }
+}
+
+/* Ink rail / mobile sheet: remap semantic tokens so existing muted/foreground
+   utilities (including ProfileDropdown, which this job does not own) read
+   correctly on the dark navigation surface. Portaled menus keep page tokens. */
+.shell-nav {
+  --background: var(--nav);
+  --foreground: var(--nav-foreground);
+  --muted: var(--nav-muted);
+  --muted-foreground: var(--nav-muted-foreground);
+  --accent: var(--nav-accent);
+  --accent-foreground: var(--nav-foreground);
+  --border: var(--nav-border);
+  --card: var(--nav);
+  --card-foreground: var(--nav-foreground);
+  --ring: var(--brand);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  background-color: hsl(var(--nav));
+  color: hsl(var(--nav-foreground));
+  border-color: hsl(var(--nav-border));
 }
 
 /* Hide scrollbar across browsers */
@@ -159,6 +216,12 @@
 
 @utility text-30 {
   @apply text-[30px] leading-[38px];
+}
+
+@utility text-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.025em;
 }
 
 /* Home */
@@ -193,11 +256,11 @@
 }
 
 @utility sidebar-logo {
-  @apply 2xl:text-26 text-[26px] text-blue-500 font-bold max-xl:hidden;
+  @apply 2xl:text-26 text-display text-[26px] text-foreground max-xl:hidden;
 }
 
 @utility sidebar-link {
-  @apply flex gap-3 items-center text-blue-500 py-1 md:p-3 2xl:p-4 rounded-lg justify-center xl:justify-start;
+  @apply flex gap-3 items-center text-foreground py-1 md:p-3 2xl:p-4 rounded-lg justify-center xl:justify-start;
 }
 
 @utility sidebar-label {
@@ -206,7 +269,9 @@
 
 /* Navlink */
 @utility navlink {
-  @apply relative flex items-center overflow-hidden transition-all duration-200 ease-in-out;
+  @apply relative flex items-center overflow-hidden;
+  @apply motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-in-out;
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
 }
 
 /* Override: For Calender component to hide month, year labels */
@@ -219,4 +284,13 @@
 }
 .rdp-dropdown_year > div {
   @apply hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navlink,
+  .shell-nav,
+  .shell-header {
+    transition-duration: 0.01ms;
+    animation-duration: 0.01ms;
+  }
 }
